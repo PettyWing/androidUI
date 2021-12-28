@@ -36,3 +36,39 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
+
+apply plugin: "maven-publish"
+
+// 1. 增加上传源码的task
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    archiveClassifier = "sources"
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            debug(MavenPublication) {
+                from components.debug
+                // 使用方引用 implementation 'cn.com.jack:mavendemo:2.7.0-SNAPSHOT'
+                groupId = "com.youer.ui"
+                artifactId = "ui"
+                version = "1.0.0.1-SNAPSHOT"
+                // 上传source，这样使用放可以看到方法注释
+                artifact sourceJar
+            }
+            release(MavenPublication) {
+                from components.release
+                // 使用方引用 implementation 'cn.com.jack:mavendemo:2.7.0-SNAPSHOT'
+                groupId = "com.youer.ui"
+                artifactId = "ui"
+                version = "1.0.0"
+                // 上传source，这样使用放可以看到方法注释
+                artifact sourceJar
+            }
+        }
+        repositories { RepositoryHandler handler->
+            handler.mavenLocal()  // 发布到默认的 本地maven 仓库 ，路径： USER_HOME/.m2/repository/
+        }
+    }
+}

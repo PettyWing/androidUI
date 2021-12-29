@@ -37,9 +37,10 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
 
+// 使用插件
 apply plugin: "maven-publish"
 
-// 1. 增加上传源码的task
+// 上传源码
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     archiveClassifier = "sources"
@@ -48,27 +49,30 @@ task sourceJar(type: Jar) {
 afterEvaluate {
     publishing {
         publications {
+            // 发布debug包
             debug(MavenPublication) {
+                // 使用 Android Gradle 插件生成的组件，作为发布的内容
                 from components.debug
-                // 使用方引用 implementation 'cn.com.jack:mavendemo:2.7.0-SNAPSHOT'
+                // 配置aar的参数
                 groupId = "com.youer.ui"
-                artifactId = "ui"
+                artifactId = "floatwindow"
                 version = "1.0.0.1-SNAPSHOT"
-                // 上传source，这样使用放可以看到方法注释
+                // 上传source
                 artifact sourceJar
             }
+            // 发布release包
             release(MavenPublication) {
                 from components.release
-                // 使用方引用 implementation 'cn.com.jack:mavendemo:2.7.0-SNAPSHOT'
+                // 配置aar的参数
                 groupId = "com.youer.ui"
-                artifactId = "ui"
+                artifactId = "floatwindow"
                 version = "1.0.0"
-                // 上传source，这样使用放可以看到方法注释
+                // 上传source
                 artifact sourceJar
             }
         }
         repositories { RepositoryHandler handler->
-            handler.mavenLocal()  // 发布到默认的 本地maven 仓库 ，路径： USER_HOME/.m2/repository/
+            handler.mavenLocal()  // 发布到默认的 本地maven 仓库
         }
     }
 }

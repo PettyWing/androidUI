@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import androidx.appcompat.app.AppCompatActivity;
-import com.youer.ui.FloatWindow;
+import com.youer.ui.floatwindow.FloatWindow;
 
 public class MainActivity extends AppCompatActivity {
 

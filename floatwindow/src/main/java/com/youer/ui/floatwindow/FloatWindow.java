@@ -1,4 +1,4 @@
-package com.youer.ui;
+package com.youer.ui.floatwindow;
 
 import android.content.Context;
 import android.os.Build;
@@ -9,6 +9,10 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.Toast;
+import com.youer.ui.floatwindow.permission.FloatPermissionActivity;
+import com.youer.ui.floatwindow.permission.FloatPermissionListener;
+import com.youer.ui.floatwindow.utils.ScreenTool;
 
 /**
  * 悬浮窗
@@ -115,14 +119,31 @@ public class FloatWindow {
     }
 
     public void show() {
-        if (!FloatPermissionUtil.requestFloatPermission(context)) {
-            return;
-        }
-        if (isShowing()) {
-            return;
-        }
-        windowManager.addView(floatView, layoutParams);
-        showing = true;
+        FloatPermissionActivity.requestPermission(context, new FloatPermissionListener() {
+            @Override
+            public void onAcquired() {
+                if (isShowing()) {
+                    return;
+                }
+                windowManager.addView(floatView, layoutParams);
+                showing = true;
+            }
+
+            @Override
+            public void onSuccess() {
+                if (isShowing()) {
+                    return;
+                }
+                windowManager.addView(floatView, layoutParams);
+                showing = true;
+            }
+
+            @Override
+            public void onFailed() {
+                Toast.makeText(context, "未获取到权限", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     public boolean isShowing() {

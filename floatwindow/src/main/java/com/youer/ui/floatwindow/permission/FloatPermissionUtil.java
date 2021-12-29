@@ -1,6 +1,7 @@
-package com.youer.ui;
+package com.youer.ui.floatwindow.permission;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AppOpsManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -16,8 +17,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-
 /**
  * @author youer
  * @date 2021/11/11
@@ -25,24 +24,12 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 public class FloatPermissionUtil {
 
     private static final String TAG = "FloatPermissionManager";
-
-    /**
-     * 申请悬浮窗权限
-     *
-     * @param Context context
-     */
-    public static boolean requestFloatPermission(Context context) {
-        if (!isRequestFloatPermission(context)) {
-            jumpToSetting(context);
-            return false;
-        }
-        return true;
-    }
+    public static final int REQ_FLOAT_PERMISSION = 1;
 
     /**
      * 是否有悬浮窗权限
      */
-    public static boolean isRequestFloatPermission(Context context) {
+    public static boolean checkPermission(Context context) {
         // 如果大于23则直接通过系统判断
         if (VERSION.SDK_INT >= 23) {
             return Settings.canDrawOverlays(context);
@@ -78,99 +65,94 @@ public class FloatPermissionUtil {
         return false;
     }
 
-    public static void jumpToSetting(Context context) {
+    public static void jumpToSetting(Activity activity) {
         try {
             if (VERSION.SDK_INT >= 23) {
-                toSettingFloatPermission(context);
+                toSettingFloatPermission(activity);
             } else if (TextUtils.equals("Meizu", Build.MANUFACTURER)) {
                 Log.e(TAG, "jumpToSetting: " + "魅族手机");
-                toMeiZuSetting(context);
+                toMeiZuSetting(activity);
             } else if ("Oppo".equalsIgnoreCase(Build.MANUFACTURER)) {
                 Log.e(TAG, "jumpToSetting: " + "Oppo手机");
-                toOppoSetting(context);
+                toOppoSetting(activity);
             } else if ("Xiaomi".equals(Build.MANUFACTURER)) {
                 Log.e(TAG, "jumpToSetting: " + "小米手机");
-                toXiaoMiSetting(context);
+                toXiaoMiSetting(activity);
             }
         } catch (Exception unused) {
             Log.d(TAG, "jumpToSetting: " + unused.getMessage());
-            Toast.makeText(context, "开启悬浮播放功能失败", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "开启悬浮播放功能失败", Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
      * 跳转到系统设置界面
      *
-     * @param Context context
+     * @param activity
      */
     @TargetApi(23)
-    private static void toSettingFloatPermission(Context context) {
+    private static void toSettingFloatPermission(Activity activity) {
         Intent intent = new Intent();
-        intent.setAction("android.settings.action.MANAGE_OVERLAY_PERMISSION");
-        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-        String sb = "package:" + context.getPackageName();
+        intent.setAction(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+        String sb = "package:" + activity.getPackageName();
         intent.setData(Uri.parse(sb));
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, REQ_FLOAT_PERMISSION);
     }
 
     /**
      * 魅族设置界面
      */
-    private static void toMeiZuSetting(Context context) {
+    private static void toMeiZuSetting(Activity activity) {
         Intent intent = new Intent("com.meizu.safe.security.SHOW_APPSEC");
         intent.setClassName("com.meizu.safe", "com.meizu.safe.security.AppSecActivity");
-        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("packageName", context.getPackageName());
-        context.startActivity(intent);
+        intent.putExtra("packageName", activity.getPackageName());
+        activity.startActivityForResult(intent, REQ_FLOAT_PERMISSION);
     }
 
-    private static void toXiaoMiSetting(Context context) {
+    private static void toXiaoMiSetting(Activity activity) {
         Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
-        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
         if ("V5".equals(getXiaoMiVersion())) {
             PackageInfo packageInfo = null;
             try {
-                packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+                packageInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
                 intent.setClassName("com.miui.securitycenter",
                     "com.miui.securitycenter.permission.AppPermissionsEditor");
                 intent.putExtra("extra_package_uid", packageInfo.applicationInfo.uid);
-                context.startActivity(intent);
+                activity.startActivityForResult(intent, REQ_FLOAT_PERMISSION);
             } catch (NameNotFoundException unused) {
                 unused.printStackTrace();
             }
         } else if ("V6".equals(getXiaoMiVersion())) {
             intent.setClassName("com.miui.securitycenter",
                 "com.miui.permcenter.permissions.AppPermissionsEditorActivity");
-            intent.putExtra("extra_pkgname", context.getPackageName());
-            context.startActivity(intent);
+            intent.putExtra("extra_pkgname", activity.getPackageName());
+            activity.startActivityForResult(intent, REQ_FLOAT_PERMISSION);
         } else {
             Intent intent2 = new Intent("miui.intent.action.APP_PERM_EDITOR");
             intent2.setPackage("com.miui.securitycenter");
-            intent2.putExtra("extra_pkgname", context.getPackageName());
-            context.startActivity(intent2);
+            intent2.putExtra("extra_pkgname", activity.getPackageName());
+            activity.startActivity(intent2);
         }
     }
 
     /**
      * 跳转到oppo手机设置界面
      */
-    private static void toOppoSetting(Context context) {
+    private static void toOppoSetting(Activity activity) {
         Intent intent = new Intent("android.intent.action.MAIN");
-        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.setComponent(new ComponentName("com.coloros.safecenter",
             "com.coloros.safecenter.permission.floatwindow.FloatWindowListActivity"));
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, REQ_FLOAT_PERMISSION);
     }
 
     /**
      * 跳转到iqoo
      */
-    private static void toIqoo(Context context) {
+    private static void toIqoo(Activity activity) {
         Intent intent = new Intent("android.intent.action.MAIN");
-        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.setComponent(
             new ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.FloatWindowManager"));
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, REQ_FLOAT_PERMISSION);
     }
 
     public static String getXiaoMiVersion() {

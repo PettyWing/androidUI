@@ -1,6 +1,7 @@
-package com.youer.ui.floatwindow.utils;
+package com.youer.ui.floatwindow;
 
 import android.content.Context;
+import android.widget.FrameLayout;
 
 /**
  * @author youer
@@ -19,8 +20,18 @@ public class ScreenTool {
      * 有些情况获取宽和高是反的
      */
     public static int getScreenHeight(Context context) {
-
         return context.getResources().getDisplayMetrics().heightPixels;
+    }
+
+    public static int getSize(Context context, @Screen.ScreenType int screen, float radio) {
+        switch (screen) {
+            case Screen.WIDTH:
+                return (int)(getScreenWidth(context) * radio);
+            case Screen.HEIGHT:
+                return (int)(getScreenHeight(context) * radio);
+            default:
+                return FrameLayout.LayoutParams.WRAP_CONTENT;
+        }
     }
 
     /**

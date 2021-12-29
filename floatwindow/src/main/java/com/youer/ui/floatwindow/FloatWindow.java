@@ -9,10 +9,8 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 import com.youer.ui.floatwindow.permission.FloatPermissionActivity;
 import com.youer.ui.floatwindow.permission.FloatPermissionListener;
-import com.youer.ui.floatwindow.utils.ScreenTool;
 
 /**
  * 悬浮窗
@@ -61,18 +59,29 @@ public class FloatWindow {
      */
     private float rowX;
     private float rowY;
+    private FloatPermissionListener permissionListener;
+    private ViewStateListener viewStateListener;
+    // 是否可编辑
+    private boolean editable;
 
     public FloatWindow(Builder builder) {
+        build(builder);
+        initWindowManager();
+        initLayoutParams();
+        initFloatView();
+        initFloatView();
+    }
+
+    private void build(Builder builder) {
         this.context = builder.context;
         this.contentView = builder.view;
         this.width = builder.width;
         this.height = builder.height;
         this.startX = builder.startX;
         this.startY = builder.startY;
-        initWindowManager();
-        initLayoutParams();
-        initFloatView();
-        initFloatView();
+        this.permissionListener = builder.permissionListener;
+        this.viewStateListener = builder.viewStateListener;
+        this.editable = builder.editable;
     }
 
     private void initWindowManager() {
@@ -90,8 +99,12 @@ public class FloatWindow {
         }
         // 设置之后window永远不会获取焦点,所以用户不能给此window发送点击事件,焦点会传递给在其下面的可获取焦点的window
         // windowManger.LayoutParams flag含义 https://www.jianshu.com/p/b2580adcfcd2
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-            | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        if (editable) {
+            layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        } else {
+            layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        }
         layoutParams.gravity = Gravity.START | Gravity.TOP;
         //悬浮窗起始位置
         layoutParams.x = startX;
@@ -122,25 +135,36 @@ public class FloatWindow {
         FloatPermissionActivity.requestPermission(context, new FloatPermissionListener() {
             @Override
             public void onAcquired() {
-                if (isShowing()) {
-                    return;
+                show();
+                if (permissionListener != null) {
+                    permissionListener.onAcquired();
                 }
-                windowManager.addView(floatView, layoutParams);
-                showing = true;
             }
 
             @Override
             public void onSuccess() {
+                show();
+                if (permissionListener != null) {
+                    permissionListener.onSuccess();
+                }
+            }
+
+            @Override
+            public void onFailed() {
+                if (permissionListener != null) {
+                    permissionListener.onFailed();
+                }
+            }
+
+            private void show() {
                 if (isShowing()) {
                     return;
                 }
                 windowManager.addView(floatView, layoutParams);
                 showing = true;
-            }
-
-            @Override
-            public void onFailed() {
-                Toast.makeText(context, "未获取到权限", Toast.LENGTH_SHORT).show();
+                if (viewStateListener != null) {
+                    viewStateListener.onShow();
+                }
             }
         });
 
@@ -156,6 +180,9 @@ public class FloatWindow {
         }
         windowManager.removeView(floatView);
         showing = false;
+        if (viewStateListener != null) {
+            viewStateListener.onDismiss();
+        }
     }
 
     /**
@@ -164,6 +191,7 @@ public class FloatWindow {
     public void updateLocation(float x, float y) {
         layoutParams.x = (int)x;
         layoutParams.y = (int)y;
+
         windowManager.updateViewLayout(floatView, layoutParams);
     }
 
@@ -236,7 +264,7 @@ public class FloatWindow {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     //拖动事件下一直计算坐标 然后更新悬浮窗位置
-                    updateLocation((rowX - downX), (rowY - downY));
+                    actionMove(event);
                     break;
                 case MotionEvent.ACTION_UP:
                     actionUp(event);
@@ -251,21 +279,14 @@ public class FloatWindow {
         }
 
         /**
-         * 手指点击窗口外的事件
+         * 手指按下事件
          *
          * @param event
          */
-        private void actionOutSide(MotionEvent event) {
-            //由于我们在layoutParams中添加了FLAG_WATCH_OUTSIDE_TOUCH标记，那么点击悬浮窗之外时此事件就会被响应
-            //这里可以用来扩展点击悬浮窗外部响应事件
-        }
-
-        /**
-         * 手指抬起事件
-         *
-         * @param event
-         */
-        private void actionUp(MotionEvent event) {
+        private void actionDown(MotionEvent event) {
+            if (viewStateListener != null) {
+                viewStateListener.onActionDown(event);
+            }
         }
 
         /**
@@ -274,16 +295,35 @@ public class FloatWindow {
          * @param event
          */
         private void actionMove(MotionEvent event) {
+            float movedX = rowX - downX;
+            float movedY = rowY - downY;
             //拖动事件下一直计算坐标 然后更新悬浮窗位置
             updateLocation((rowX - downX), (rowY - downY));
+            if (viewStateListener != null) {
+                viewStateListener.onActionMove(event, movedX, movedY);
+            }
         }
 
         /**
-         * 手指按下事件
+         * 手指抬起事件
          *
          * @param event
          */
-        private void actionDown(MotionEvent event) {
+        private void actionUp(MotionEvent event) {
+            if (viewStateListener != null) {
+                viewStateListener.onActionUp(event);
+            }
+        }
+
+        /**
+         * 手指点击窗口外的事件
+         *
+         * @param event
+         */
+        private void actionOutSide(MotionEvent event) {
+            if (viewStateListener != null) {
+                viewStateListener.onActionOutSide(event);
+            }
         }
 
     }
@@ -295,6 +335,9 @@ public class FloatWindow {
         private int height = FrameLayout.LayoutParams.WRAP_CONTENT;
         private int startX;
         private int startY;
+        private FloatPermissionListener permissionListener;
+        private ViewStateListener viewStateListener;
+        private boolean editable;
 
         public Builder(Context context, View view) {
             this.context = context;
@@ -306,8 +349,18 @@ public class FloatWindow {
             return this;
         }
 
+        public Builder setWidth(@Screen.ScreenType int screen, float radio) {
+            this.width = ScreenTool.getSize(context, screen, radio);
+            return this;
+        }
+
         public Builder setHeight(int height) {
             this.height = height;
+            return this;
+        }
+
+        public Builder setHeight(@Screen.ScreenType int screen, float radio) {
+            this.height = ScreenTool.getSize(context, screen, radio);
             return this;
         }
 
@@ -316,8 +369,33 @@ public class FloatWindow {
             return this;
         }
 
+        public Builder setStartX(@Screen.ScreenType int screen, float radio) {
+            this.startX = ScreenTool.getSize(context, screen, radio);
+            return this;
+        }
+
         public Builder setStartY(int startY) {
             this.startY = startY;
+            return this;
+        }
+
+        public Builder setStartY(@Screen.ScreenType int screen, float radio) {
+            this.startY = ScreenTool.getSize(context, screen, radio);
+            return this;
+        }
+
+        public Builder setPermissionListener(FloatPermissionListener permissionListener) {
+            this.permissionListener = permissionListener;
+            return this;
+        }
+
+        public Builder setViewStateListener(ViewStateListener viewStateListener) {
+            this.viewStateListener = viewStateListener;
+            return this;
+        }
+
+        public Builder setEditable(boolean editable) {
+            this.editable = editable;
             return this;
         }
 

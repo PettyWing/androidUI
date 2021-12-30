@@ -1,10 +1,9 @@
 package com.youer.ui.floatwindow.permission;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 
 /**
  * 用于权限验证的activity
@@ -12,12 +11,12 @@ import androidx.annotation.Nullable;
  * @author youer
  * @date 2021/12/29
  */
-public class FloatPermissionActivity extends Activity {
+public class FloatPermissionActivity extends AppCompatActivity {
 
     private static FloatPermissionListener mListener;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FloatPermissionUtil.jumpToSetting(this);
     }

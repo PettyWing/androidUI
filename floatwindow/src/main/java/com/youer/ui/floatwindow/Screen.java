@@ -3,7 +3,7 @@ package com.youer.ui.floatwindow;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import androidx.annotation.IntDef;
+import android.support.annotation.IntDef;
 
 /**
  * @author youer

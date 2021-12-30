@@ -6,7 +6,6 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import com.youer.ui.floatwindow.permission.FloatPermissionActivity;
@@ -32,10 +31,6 @@ public class FloatWindow {
      */
     private View contentView;
     /**
-     * 悬浮View
-     */
-    private View floatView;
-    /**
      * View的宽
      */
     private int width = FrameLayout.LayoutParams.WRAP_CONTENT;
@@ -51,14 +46,10 @@ public class FloatWindow {
     /**
      * 触摸点相对于view左上角的坐标
      */
-    private float downX;
-    private float downY;
+    private float downX, downY, upX, upY;
+    private int mx;
+    private int my;
     private boolean showing;
-    /**
-     * 触摸点相对于屏幕左上角的坐标
-     */
-    private float rowX;
-    private float rowY;
     private FloatPermissionListener permissionListener;
     private ViewStateListener viewStateListener;
     // 是否可编辑
@@ -112,8 +103,7 @@ public class FloatWindow {
     }
 
     private void initFloatView() {
-        floatView = new FloatView(context);
-        floatView.setOnTouchListener(new ItemViewTouchListener());
+        contentView.setOnTouchListener(new ItemViewTouchListener());
     }
 
     /**
@@ -128,7 +118,7 @@ public class FloatWindow {
             layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         }
-        windowManager.updateViewLayout(floatView, layoutParams);
+        windowManager.updateViewLayout(contentView, layoutParams);
     }
 
     public void show() {
@@ -160,7 +150,7 @@ public class FloatWindow {
                 if (isShowing()) {
                     return;
                 }
-                windowManager.addView(floatView, layoutParams);
+                windowManager.addView(contentView, layoutParams);
                 showing = true;
                 if (viewStateListener != null) {
                     viewStateListener.onShow();
@@ -178,7 +168,7 @@ public class FloatWindow {
         if (!showing) {
             return;
         }
-        windowManager.removeView(floatView);
+        windowManager.removeView(contentView);
         showing = false;
         if (viewStateListener != null) {
             viewStateListener.onDismiss();
@@ -188,144 +178,61 @@ public class FloatWindow {
     /**
      * 更新位置
      */
-    public void updateLocation(float x, float y) {
-        layoutParams.x = (int)x;
-        layoutParams.y = (int)y;
+    public void updateLocation(int x, int y) {
+        layoutParams.x = mx = x;
+        layoutParams.y = my = y;
 
-        windowManager.updateViewLayout(floatView, layoutParams);
-    }
-
-    class FloatView extends FrameLayout {
-        /**
-         * 拖动最小偏移量
-         */
-        private static final int MINIMUM_OFFSET = 5;
-        /**
-         * 记录按下位置
-         */
-        int interceptX = 0;
-        int interceptY = 0;
-
-        public FloatView(Context context) {
-            super(context);
-            //这里由于一个ViewGroup不能add一个已经有Parent的contentView,所以需要先判断contentView是否有Parent
-            //如果有则需要将contentView先移除
-            if (contentView.getParent() != null && contentView.getParent() instanceof ViewGroup) {
-                ((ViewGroup)contentView.getParent()).removeView(contentView);
-            }
-
-            addView(contentView);
-        }
-
-        /**
-         * 解决点击与拖动冲突的关键代码
-         *
-         * @param ev
-         * @return
-         */
-        @Override
-        public boolean onInterceptTouchEvent(MotionEvent ev) {
-            //此回调如果返回true则表示拦截TouchEvent由自己处理，false表示不拦截TouchEvent分发出去由子view处理
-            //解决方案：如果是拖动父View则返回true调用自己的onTouch改变位置，是点击则返回false去响应子view的点击事件
-            boolean isIntercept = false;
-            switch (ev.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    interceptX = (int)ev.getX();
-                    interceptY = (int)ev.getY();
-                    downX = ev.getX();
-                    downY = ev.getY();
-                    isIntercept = false;
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    //在一些dpi较高的设备上点击view很容易触发 ACTION_MOVE，所以此处做一个过滤
-                    isIntercept = Math.abs(ev.getX() - interceptX) > MINIMUM_OFFSET && Math.abs(ev.getY() - interceptY)
-                        > MINIMUM_OFFSET;
-                    break;
-                case MotionEvent.ACTION_UP:
-                    break;
-                default:
-                    break;
-            }
-            return isIntercept;
-        }
+        windowManager.updateViewLayout(contentView, layoutParams);
     }
 
     class ItemViewTouchListener implements OnTouchListener {
+        float lastX, lastY, changeX, changeY;
+        boolean click = false;
 
         public boolean onTouch(View v, MotionEvent event) {
 
-            //获取触摸点相对于屏幕左上角的坐标
-            rowX = event.getRawX();
-            rowY = event.getRawY() - ScreenTool.getStatusBarHeight(context);
-
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    actionDown(event);
+                    downX = event.getRawX();
+                    downY = event.getRawY();
+                    lastX = event.getRawX();
+                    lastY = event.getRawY();
+                    if (viewStateListener != null) {
+                        viewStateListener.onActionDown(event);
+                    }
                     break;
                 case MotionEvent.ACTION_MOVE:
                     //拖动事件下一直计算坐标 然后更新悬浮窗位置
-                    actionMove(event);
+                    changeX = event.getRawX() - lastX;
+                    changeY = event.getRawY() - lastY;
+                    int movedX = (int)(mx + changeX);
+                    int movedY = (int)(my + changeY);
+                    //拖动事件下一直计算坐标 然后更新悬浮窗位置
+                    updateLocation(movedX, movedY);
+                    if (viewStateListener != null) {
+                        viewStateListener.onActionMove(event, movedX, movedY);
+                    }
+                    lastX = event.getRawX();
+                    lastY = event.getRawY();
                     break;
                 case MotionEvent.ACTION_UP:
-                    actionUp(event);
+                    upX = event.getRawX();
+                    upY = event.getRawY();
+                    //click = (Math.abs(upX - downX) > 5) || (Math.abs(upY - downY) > 5);
+                    if (viewStateListener != null) {
+                        viewStateListener.onActionUp(event);
+                    }
                     break;
                 case MotionEvent.ACTION_OUTSIDE:
-                    actionOutSide(event);
+                    if (viewStateListener != null) {
+                        viewStateListener.onActionOutSide(event);
+                    }
                     break;
                 default:
                     break;
             }
-            return false;
+            return click;
         }
-
-        /**
-         * 手指按下事件
-         *
-         * @param event
-         */
-        private void actionDown(MotionEvent event) {
-            if (viewStateListener != null) {
-                viewStateListener.onActionDown(event);
-            }
-        }
-
-        /**
-         * 拖动事件
-         *
-         * @param event
-         */
-        private void actionMove(MotionEvent event) {
-            float movedX = rowX - downX;
-            float movedY = rowY - downY;
-            //拖动事件下一直计算坐标 然后更新悬浮窗位置
-            updateLocation((rowX - downX), (rowY - downY));
-            if (viewStateListener != null) {
-                viewStateListener.onActionMove(event, movedX, movedY);
-            }
-        }
-
-        /**
-         * 手指抬起事件
-         *
-         * @param event
-         */
-        private void actionUp(MotionEvent event) {
-            if (viewStateListener != null) {
-                viewStateListener.onActionUp(event);
-            }
-        }
-
-        /**
-         * 手指点击窗口外的事件
-         *
-         * @param event
-         */
-        private void actionOutSide(MotionEvent event) {
-            if (viewStateListener != null) {
-                viewStateListener.onActionOutSide(event);
-            }
-        }
-
     }
 
     public static class Builder {

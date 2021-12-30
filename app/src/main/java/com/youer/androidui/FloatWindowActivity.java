@@ -1,13 +1,13 @@
 package com.youer.androidui;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
-import androidx.annotation.Nullable;
 import com.youer.ui.floatwindow.FloatWindow;
 import com.youer.ui.floatwindow.FloatWindow.Builder;
 import com.youer.ui.floatwindow.Screen;
@@ -18,8 +18,9 @@ import com.youer.ui.floatwindow.permission.FloatPermissionListener;
  * @author youer
  * @date 2021/12/29
  */
-public class FloatWindowActivity extends Activity {
+public class FloatWindowActivity extends AppCompatActivity {
     private static final String TAG = "FloatWindowActivity";
+    private FloatWindow floatWindow;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,7 +30,7 @@ public class FloatWindowActivity extends Activity {
 
     public void openFloatWindow(View view) {
         LinearLayout floatView = (LinearLayout)LayoutInflater.from(this).inflate(R.layout.float_view, null);
-        FloatWindow floatWindow = new Builder(this, floatView)
+        floatWindow = new Builder(this, floatView)
             .setWidth(Screen.WIDTH, 0.5f)
             .setHeight(Screen.HEIGHT, 0.3f)
             .setStartX(Screen.WIDTH, 0.5f)
@@ -84,6 +85,13 @@ public class FloatWindowActivity extends Activity {
             })
             .build();
         floatWindow.show();
+        floatWindow.updateLocation(100,200);
     }
 
+    public void closeFloatWindow(View view) {
+        if (floatWindow == null || !floatWindow.isShowing()) {
+            return;
+        }
+        floatWindow.dismiss();
+    }
 }

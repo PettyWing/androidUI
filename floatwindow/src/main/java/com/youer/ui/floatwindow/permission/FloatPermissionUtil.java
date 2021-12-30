@@ -1,7 +1,6 @@
 package com.youer.ui.floatwindow.permission;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AppOpsManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,6 +12,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.provider.Settings;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -65,7 +65,7 @@ public class FloatPermissionUtil {
         return false;
     }
 
-    public static void jumpToSetting(Activity activity) {
+    public static void jumpToSetting(AppCompatActivity activity) {
         try {
             if (VERSION.SDK_INT >= 23) {
                 toSettingFloatPermission(activity);
@@ -91,7 +91,7 @@ public class FloatPermissionUtil {
      * @param activity
      */
     @TargetApi(23)
-    private static void toSettingFloatPermission(Activity activity) {
+    private static void toSettingFloatPermission(AppCompatActivity activity) {
         Intent intent = new Intent();
         intent.setAction(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         String sb = "package:" + activity.getPackageName();
@@ -102,14 +102,14 @@ public class FloatPermissionUtil {
     /**
      * 魅族设置界面
      */
-    private static void toMeiZuSetting(Activity activity) {
+    private static void toMeiZuSetting(AppCompatActivity activity) {
         Intent intent = new Intent("com.meizu.safe.security.SHOW_APPSEC");
         intent.setClassName("com.meizu.safe", "com.meizu.safe.security.AppSecActivity");
         intent.putExtra("packageName", activity.getPackageName());
         activity.startActivityForResult(intent, REQ_FLOAT_PERMISSION);
     }
 
-    private static void toXiaoMiSetting(Activity activity) {
+    private static void toXiaoMiSetting(AppCompatActivity activity) {
         Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
         if ("V5".equals(getXiaoMiVersion())) {
             PackageInfo packageInfo = null;
@@ -138,7 +138,7 @@ public class FloatPermissionUtil {
     /**
      * 跳转到oppo手机设置界面
      */
-    private static void toOppoSetting(Activity activity) {
+    private static void toOppoSetting(AppCompatActivity activity) {
         Intent intent = new Intent("android.intent.action.MAIN");
         intent.setComponent(new ComponentName("com.coloros.safecenter",
             "com.coloros.safecenter.permission.floatwindow.FloatWindowListActivity"));
@@ -148,7 +148,7 @@ public class FloatPermissionUtil {
     /**
      * 跳转到iqoo
      */
-    private static void toIqoo(Activity activity) {
+    private static void toIqoo(AppCompatActivity activity) {
         Intent intent = new Intent("android.intent.action.MAIN");
         intent.setComponent(
             new ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.FloatWindowManager"));

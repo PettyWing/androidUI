@@ -1,2 +1,20 @@
 include ':app'
 rootProject.name = "AndroidUi"
+
+File localPropertiesFile = new File(rootDir.getAbsolutePath() + "/local.properties")
+File localDevelopFile = new File(rootDir.getAbsolutePath() + "/local_develop.gradle")
+if (localPropertiesFile.exists() && localDevelopFile.exists()) {
+    apply from: "local_develop.gradle"
+    if (ext.has("dependencies")) {
+        ext.getProperty("dependencies").each { projectConfig ->
+            // 如果工程是本地依赖，使用本地工程源码进行替换
+            if (projectConfig["isLocalModule"]) {
+                includeBuild(projectConfig["projectPath"]) {
+                    dependencySubstitution {
+                        substitute module(projectConfig["projectMaven"]) with project(projectConfig["projectName"])
+                    }
+                }
+            }
+        }
+    }
+}

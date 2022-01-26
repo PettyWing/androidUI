@@ -1,3 +1,2 @@
-include ':floatwindow'
 include ':app'
 rootProject.name = "AndroidUi"

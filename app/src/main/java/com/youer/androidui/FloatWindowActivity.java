@@ -8,11 +8,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
-import com.youer.ui.floatwindow.FloatWindow;
-import com.youer.ui.floatwindow.FloatWindow.Builder;
-import com.youer.ui.floatwindow.Screen;
-import com.youer.ui.floatwindow.ViewStateListener;
-import com.youer.ui.floatwindow.permission.FloatPermissionListener;
+import com.youer.floatwindow.FloatWindow;
+import com.youer.floatwindow.Screen;
+import com.youer.floatwindow.TagMode.Mode;
+import com.youer.floatwindow.ViewStateListener;
+import com.youer.floatwindow.permission.FloatPermissionListener;
 
 /**
  * @author youer
@@ -20,7 +20,7 @@ import com.youer.ui.floatwindow.permission.FloatPermissionListener;
  */
 public class FloatWindowActivity extends AppCompatActivity {
     private static final String TAG = "FloatWindowActivity";
-    private FloatWindow floatWindow;
+    public static final String FLOAT_WINDOW_TAG = "test";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -30,14 +30,18 @@ public class FloatWindowActivity extends AppCompatActivity {
 
     public void openFloatWindow(View view) {
         LinearLayout floatView = (LinearLayout)LayoutInflater.from(this).inflate(R.layout.float_view, null);
-        floatWindow = new Builder(this, floatView)
-            .setWidth(Screen.WIDTH, 0.5f)
-            .setHeight(Screen.HEIGHT, 0.3f)
+        FloatWindow.with(this, floatView)
             .setStartX(Screen.WIDTH, 0.5f)
+            .setStartY(Screen.HEIGHT, 0.5f)
             .setViewStateListener(new ViewStateListener() {
                 @Override
                 public void onShow() {
                     Log.d(TAG, "onShow() called");
+                }
+
+                @Override
+                public void onHide() {
+
                 }
 
                 @Override
@@ -83,15 +87,15 @@ public class FloatWindowActivity extends AppCompatActivity {
                     Log.d(TAG, "onFailed() called");
                 }
             })
+            .setTag(FLOAT_WINDOW_TAG, Mode.LAST)
             .build();
-        floatWindow.show();
-        floatWindow.updateLocation(100,200);
+        FloatWindow.get(FLOAT_WINDOW_TAG).show();
     }
 
     public void closeFloatWindow(View view) {
-        if (floatWindow == null || !floatWindow.isShowing()) {
+        if (FloatWindow.get(FLOAT_WINDOW_TAG) == null || !FloatWindow.get(FLOAT_WINDOW_TAG).isShowing()) {
             return;
         }
-        floatWindow.dismiss();
+        FloatWindow.get(FLOAT_WINDOW_TAG).dismiss();
     }
 }

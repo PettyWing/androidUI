@@ -1,6 +1,7 @@
 package com.youer.androidui;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -12,7 +13,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
+
     public void onFloatWindow(View view) {
-        startActivity(new Intent(this, FloatWindowActivity.class));
+        Uri.Builder uriBuilder = Uri
+            .parse("youer://io.github.pettywing/floatwindow")
+            .buildUpon();
+        uriBuilder.appendQueryParameter("test", "xxx");
+        uriBuilder.appendQueryParameter("test2", "yyy");
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(uriBuilder.build());
+        startActivity(intent);
     }
 }

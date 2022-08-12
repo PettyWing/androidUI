@@ -3,8 +3,9 @@ package com.youer.androidui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import androidx.appcompat.app.AppCompatActivity;
+import com.youer.androidui.coordinate.CollapsingToolbarLayoutActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,5 +25,9 @@ public class MainActivity extends AppCompatActivity {
         intent.setAction(Intent.ACTION_VIEW);
         intent.setData(uriBuilder.build());
         startActivity(intent);
+    }
+
+    public void onCoordinatorClick(View view) {
+        startActivity(new Intent(this, CollapsingToolbarLayoutActivity.class));
     }
 }

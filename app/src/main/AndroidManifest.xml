@@ -27,6 +27,10 @@
             </intent-filter>
 
         </activity>
+
+        <activity android:name=".coordinate.CollapsingToolbarLayoutActivity">
+
+        </activity>
     </application>
 
 </manifest>

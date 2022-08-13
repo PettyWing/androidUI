@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
+import com.youer.androidui.coordinate.BottomSheetActivity;
 import com.youer.androidui.coordinate.CollapsingToolbarLayoutActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,7 +28,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void onCoordinatorClick(View view) {
+    public void onCollapsingToolbarClick(View view) {
         startActivity(new Intent(this, CollapsingToolbarLayoutActivity.class));
+    }
+
+    public void onBottomSheetClick(View view) {
+        startActivity(new Intent(this, BottomSheetActivity.class));
     }
 }

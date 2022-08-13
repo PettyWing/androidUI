@@ -15,7 +15,13 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="onCoordinatorClick"
-        android:text="Coordinate滑动" />
+        android:onClick="onCollapsingToolbarClick"
+        android:text="CollapsingToolbar滑动" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onBottomSheetClick"
+        android:text="BottomSheet滑动" />
 
 </LinearLayout>

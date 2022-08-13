@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AndroidUi</string>
+    <dimen name="image_mini_height">100dp</dimen>
+    <dimen name="image_max_height">200dp</dimen>
 </resources>

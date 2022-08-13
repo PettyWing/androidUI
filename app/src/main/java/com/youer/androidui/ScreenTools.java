@@ -1,6 +1,7 @@
 package com.youer.androidui;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
@@ -135,4 +136,13 @@ public class ScreenTools {
         DENSITY = -1;
     }
 
+    public static int getStatusBarHeight(Context context) {
+        int statusBarHeight = 0;
+        Resources res = context.getResources();
+        int resourceId = res.getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = res.getDimensionPixelSize(resourceId);
+        }
+        return statusBarHeight;
+    }
 }

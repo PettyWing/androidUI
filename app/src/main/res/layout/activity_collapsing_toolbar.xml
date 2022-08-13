@@ -15,8 +15,8 @@
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:minHeight="100dp"
+            android:layout_height="@dimen/image_max_height"
+            android:minHeight="@dimen/image_mini_height"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
             <View

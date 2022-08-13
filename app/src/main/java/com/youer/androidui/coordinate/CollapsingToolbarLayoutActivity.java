@@ -1,20 +1,13 @@
 package com.youer.androidui.coordinate;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.Adapter;
-import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener;
 import com.youer.androidui.R;
@@ -23,40 +16,21 @@ import com.youer.androidui.R;
  * @author youer
  * @date 2022/6/22
  */
-public class CollapsingToolbarLayoutActivity extends Activity {
-    int id = 0;
+public class CollapsingToolbarLayoutActivity extends AppCompatActivity {
+
     private static final String TAG = "CoordinatorActivity";
+    // 图片的初始高度
+    int imageOriginHeight;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_coordinator);
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new Adapter() {
-            /**
-             * @param parent
-             * @param viewType
-             * @return
-             */
-            @NonNull
-            @Override
-            public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                TextView textView = new TextView(CollapsingToolbarLayoutActivity.this);
-                return new MyViewHolder(textView);
-            }
+        setContentView(R.layout.activity_collapsing_toolbar);
+        DataBuilder.buildRecycleView(this, findViewById(R.id.recyclerView));
+        initAppBarLayout();
+    }
 
-            @Override
-            public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-                ((TextView)(holder.itemView)).setText("item" + id);
-                id++;
-            }
-
-            @Override
-            public int getItemCount() {
-                return 100;
-            }
-        });
+    private void initAppBarLayout() {
         AppBarLayout appBarLayout = findViewById(R.id.appbar);
         ImageView imageView = findViewById(R.id.image);
         // 把锚点放到左上角
@@ -73,13 +47,14 @@ public class CollapsingToolbarLayoutActivity extends Activity {
         appBarLayout.addOnOffsetChangedListener(new OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                // 第一次滑动的时候记录图片的原始高度
                 if (imageOriginHeight == 0) {
                     imageOriginHeight = imageView.getMeasuredHeight();
 
                 }
+                // 根据滑动的距离缩放图片
                 float newHeight = imageOriginHeight + verticalOffset;
                 float scale = newHeight / imageOriginHeight;
-                Log.d(TAG, "onOffsetChanged: " + scale);
                 ViewCompat.setScaleY(imageView, scale);
                 ViewCompat.setScaleX(imageView, scale);
             }
@@ -87,12 +62,4 @@ public class CollapsingToolbarLayoutActivity extends Activity {
         });
     }
 
-    int imageOriginHeight;
-
-    class MyViewHolder extends RecyclerView.ViewHolder {
-
-        public MyViewHolder(@NonNull View itemView) {
-            super(itemView);
-        }
-    }
 }

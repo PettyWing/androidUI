@@ -28,8 +28,13 @@
 
         </activity>
 
-        <activity android:name=".coordinate.CollapsingToolbarLayoutActivity"/>
-        <activity android:name=".coordinate.BottomSheetActivity"/>
+        <activity android:name=".coordinate.CollapsingToolbarLayoutActivity" />
+        <activity android:name=".coordinate.BottomSheetActivity" />
+        <activity
+            android:name=".coordinate.CollapsingToolbarLayoutDialogActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/dialog"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

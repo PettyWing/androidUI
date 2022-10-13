@@ -21,6 +21,12 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onCollapsingToolbarDialogClick"
+        android:text="CollapsingToolbarDialog滑动" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:onClick="onBottomSheetClick"
         android:text="BottomSheet滑动" />
 

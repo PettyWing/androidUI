@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="dialog" parent="Theme.AppCompat.Dialog">
+
+        <!-- 是否有边框 -->
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsTranslucent">true</item><!-- 半透明 -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:backgroundDimAmount">0.5</item><!-- 背景模糊的透明度 数值越小越透明-->
+        <item name="android:windowIsFloating">false</item><!-- 浮现在Activity之上 -->
+        <item name="windowNoTitle">true</item><!-- 无标题 -->
+        <item name="android:windowAnimationStyle">@null</item><!-- 进入和退出动画 -->
+        <item name="android:windowBackground">@null</item>
+    </style>
+</resources>

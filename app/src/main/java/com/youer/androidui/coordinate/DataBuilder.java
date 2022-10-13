@@ -1,6 +1,7 @@
 package com.youer.androidui.coordinate;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -16,7 +17,9 @@ import androidx.recyclerview.widget.RecyclerView.Adapter;
 public class DataBuilder {
     public static void buildRecycleView(Context context, RecyclerView recyclerView) {
         final int[] id = {0};
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        LinearLayoutManager layoutManager =new LinearLayoutManager(context, 1, false);
+        layoutManager.setSmoothScrollbarEnabled(false);
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(new Adapter() {
             /**
              * @param parent
@@ -27,6 +30,7 @@ public class DataBuilder {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
                 TextView textView = new TextView(context);
+                textView.setTextColor(Color.BLACK);
                 return new MyViewHolder(textView);
             }
 
